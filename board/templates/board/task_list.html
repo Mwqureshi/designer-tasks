@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Designer Task Manager</title>
+<style>
+  :root {
+    --ink: #1c1f26;
+    --paper: #f5f3ef;
+    --card: #ffffff;
+    --line: #e3ddd0;
+    --accent: #3f6b8a;
+    --urgent: #b5502e;
+    --done: #4a7a5c;
+    --adnan: #2f8a6b;
+    --hamid: #7a5c9e;
+    --zain: #c07a2b;
+    --waleed: #3f6b8a;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 20px 16px 18px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  header h1 { margin: 0 0 4px; font-size: 1.25rem; letter-spacing: 0.01em; }
+  header p { margin: 0; font-size: 0.85rem; color: #b9bcc4; }
+  .logout-form { margin: 0; }
+  .logout-btn {
+    background: none; border: none; color: #b9bcc4;
+    font-size: 0.8rem; cursor: pointer; padding: 2px 0 0; font-family: inherit;
+  }
+  .logout-btn:hover { color: #fff; }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 16px; }
+  @media (min-width: 860px) { .wrap { max-width: 1100px; } }
+
+  .section-heading {
+    font-size: 1.0rem; font-weight: 700; margin: 22px 0 10px;
+    padding-bottom: 6px; border-bottom: 2px solid var(--line);
+  }
+  .section-heading:first-child { margin-top: 0; }
+
+  .overview-grid { display: grid; gap: 10px; grid-template-columns: 1fr; margin-bottom: 8px; }
+  @media (min-width: 640px) { .overview-grid { grid-template-columns: repeat(3, 1fr); } }
+  .overview-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 12px;
+  }
+  .overview-card .name { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: #6b6f78; margin-bottom: 6px; font-weight: 700; }
+  .overview-card .curtask { font-size: 0.9rem; }
+  .overview-card .free { color: #9b9fa8; font-style: italic; }
+  .overview-card .paused-note { font-size: 0.72rem; color: #9b9fa8; margin-top: 4px; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 14px; margin-bottom: 14px;
+  }
+  .card h2 {
+    margin: 0 0 12px; font-size: 0.95rem; text-transform: uppercase;
+    letter-spacing: 0.05em; color: #6b6f78;
+  }
+  form.add-form { display: grid; gap: 10px; }
+  .add-form select, .add-form input[type="text"], .add-form input[type="date"] {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+    font-size: 0.95rem; background: #fdfcf9; color: var(--ink);
+  }
+  .add-form .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+  .add-form .checkbox-row input { width: auto; }
+  .add-form .field-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .add-form .field-row .deadline-wrap { flex: 1; min-width: 140px; }
+  .add-form button {
+    background: var(--accent); color: #fff; border: none; padding: 11px 14px;
+    border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  }
+  .add-form button:active { opacity: 0.85; }
+
+  .messages { margin-bottom: 12px; }
+  .messages .msg {
+    background: #e8f3ea; border: 1px solid #bfe0c5; color: #2e5c3c;
+    padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 6px;
+  }
+
+  ul.task-list { list-style: none; margin: 0; padding: 0; }
+  li.task {
+    display: flex; align-items: flex-start; gap: 10px; padding: 12px 4px;
+    border-bottom: 1px solid var(--line); flex-wrap: wrap;
+  }
+  li.task:last-child { border-bottom: none; }
+  .tag {
+    flex-shrink: 0; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.03em; padding: 3px 7px; border-radius: 5px; color: #fff; margin-top: 2px;
+  }
+  .tag.adnan { background: var(--adnan); }
+  .tag.hamid { background: var(--hamid); }
+  .tag.zain { background: var(--zain); }
+  .tag.waleed { background: var(--waleed); }
+  .badge-urgent {
+    flex-shrink: 0; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.03em; padding: 3px 7px; border-radius: 5px; color: #fff;
+    background: var(--urgent); margin-top: 2px;
+  }
+
+  .task-body { flex: 1; min-width: 160px; }
+  .task-body .desc { font-size: 0.95rem; word-break: break-word; }
+  .task-body .meta { font-size: 0.72rem; color: #9b9fa8; margin-top: 4px; }
+  .task-body .meta.deadline-soon { color: var(--urgent); font-weight: 600; }
+
+  .done .desc { text-decoration: line-through; color: #9b9fa8; }
+
+  .actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .actions form { margin: 0; }
+  .btn-icon, a.btn-icon {
+    border: none; background: none; padding: 6px; cursor: pointer; font-size: 1.0rem;
+    line-height: 1; border-radius: 6px; text-decoration: none; display: inline-block;
+  }
+  .btn-text {
+    border: 1px solid var(--line); background: #fdfcf9; color: var(--ink);
+    padding: 7px 12px; cursor: pointer; font-size: 0.82rem; font-weight: 600;
+    border-radius: 6px;
+  }
+  .btn-text.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-text.done-btn { background: var(--done); color: #fff; border-color: var(--done); }
+  .btn-icon.btn-edit { color: #2f5f8a; }
+  .btn-icon.btn-del { color: var(--urgent); }
+  .btn-icon.btn-reopen { color: #9b9fa8; }
+  .btn-icon:active, .btn-text:active { opacity: 0.8; }
+
+  .active-task-card {
+    border: 2px solid var(--accent);
+  }
+  .active-task-card .desc { font-size: 1.05rem; font-weight: 600; }
+
+  .empty { text-align: center; color: #9b9fa8; padding: 20px 8px; font-size: 0.9rem; }
+
+  details summary { cursor: pointer; font-size: 0.85rem; color: #6b6f78; padding: 4px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Designer Task Manager</h1>
+    <p>Logged in as: <strong>{{ role_label }}</strong></p>
+  </div>
+  <form class="logout-form" method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit" class="logout-btn">Logout</button>
+  </form>
+</header>
+
+<div class="wrap">
+
+  {% if messages %}
+    <div class="messages">
+      {% for m in messages %}<div class="msg">{{ m }}</div>{% endfor %}
+    </div>
+  {% endif %}
+
+  {% if is_admin %}
+  <div class="section-heading">Overview</div>
+  <div class="overview-grid">
+    {% for item in overview %}
+    <div class="overview-card">
+      <div class="name">{{ item.label }}</div>
+      {% if item.active %}
+        <div class="curtask">{{ item.active.description }}</div>
+      {% else %}
+        <div class="curtask free">Free — koi active kaam nahin</div>
+      {% endif %}
+      {% if item.paused_count %}
+        <div class="paused-note">{{ item.paused_count }} kaam paused hain</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if is_designer %}
+  <div class="section-heading">Mera Active Kaam</div>
+  <div class="card active-task-card">
+    {% if my_active %}
+      <div class="desc">{{ my_active.description }}</div>
+      <div class="meta">
+        {% if my_active.is_urgent %}Urgent · {% endif %}
+        {% if my_active.deadline %}Deadline: {{ my_active.deadline|date:"d M" }} · {% endif %}
+        Shuru: {{ my_active.started_at|date:"d M, h:i A" }}
+      </div>
+      <div class="actions" style="margin-top:10px;">
+        <form method="post" action="{% url 'pause_task' my_active.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-text">Pause Karo</button>
+        </form>
+        <form method="post" action="{% url 'complete_task' my_active.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-text done-btn">Complete Karo</button>
+        </form>
+        <form method="post" action="{% url 'release_task' my_active.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-text">Chhor Do</button>
+        </form>
+      </div>
+    {% else %}
+      <div class="empty">Koi active kaam nahin — neeche se koi task pick karo.</div>
+    {% endif %}
+  </div>
+
+  {% if my_paused %}
+  <div class="section-heading">Mere Paused Kaam</div>
+  <div class="card">
+    <ul class="task-list">
+      {% for task in my_paused %}
+      <li class="task">
+        {% if task.is_urgent %}<span class="badge-urgent">Urgent</span>{% endif %}
+        <div class="task-body">
+          <div class="desc">{{ task.description }}</div>
+          <div class="meta">{% if task.deadline %}Deadline: {{ task.deadline|date:"d M" }}{% endif %}</div>
+        </div>
+        <div class="actions">
+          <form method="post" action="{% url 'resume_task' task.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-text primary">Resume</button>
+          </form>
+          <form method="post" action="{% url 'release_task' task.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-text">Chhor Do</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% endif %}
+
+  <div class="section-heading">Naya Task Add Karo</div>
+  <div class="card">
+    <form class="add-form" method="post">
+      {% csrf_token %}
+      {{ form.description }}
+      <div class="field-row">
+        <div class="checkbox-row">
+          {{ form.is_urgent }}
+          <label for="{{ form.is_urgent.id_for_label }}">Urgent hai</label>
+        </div>
+        <div class="deadline-wrap">
+          {{ form.deadline }}
+        </div>
+      </div>
+      <button type="submit">+ Add Task</button>
+    </form>
+  </div>
+
+  <div class="section-heading">Available Tasks ({{ pool_total }})</div>
+  <div class="card">
+    {% if pool %}
+      <ul class="task-list">
+        {% for task in pool %}
+        <li class="task">
+          <span class="tag {{ task.added_by }}">{{ task.get_added_by_display }}</span>
+          {% if task.is_urgent %}<span class="badge-urgent">Urgent</span>{% endif %}
+          <div class="task-body">
+            <div class="desc">{{ task.description }}</div>
+            <div class="meta">{% if task.deadline %}Deadline: {{ task.deadline|date:"d M" }}{% endif %}</div>
+          </div>
+          <div class="actions">
+            {% if is_designer %}
+            <form method="post" action="{% url 'pick_task' task.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn-text primary">Pick Karo</button>
+            </form>
+            {% endif %}
+            {% if is_admin %}
+            <a class="btn-icon btn-edit" href="{% url 'edit_task' task.pk %}" title="Edit">&#9998;</a>
+            <form method="post" action="{% url 'delete_task' task.pk %}" onsubmit="return confirm('Ye task delete karna hai?');">
+              {% csrf_token %}
+              <button type="submit" class="btn-icon btn-del" title="Delete">&#10005;</button>
+            </form>
+            {% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty">Pool khaali hai — koi task available nahin.</div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>Recently Completed ({{ done_recent|length }})</summary>
+      <ul class="task-list" style="margin-top:10px;">
+        {% for task in done_recent %}
+        <li class="task done">
+          <span class="tag {{ task.assigned_to }}">{{ task.get_assigned_to_display }}</span>
+          <div class="task-body">
+            <div class="desc">{{ task.description }}</div>
+            <div class="meta">Done: {{ task.completed_at|date:"d M, h:i A" }}</div>
+          </div>
+          {% if is_admin %}
+          <div class="actions">
+            <form method="post" action="{% url 'reopen_task' task.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn-icon btn-reopen" title="Wapis pool mein bhejo">&#8635;</button>
+            </form>
+            <form method="post" action="{% url 'delete_task' task.pk %}" onsubmit="return confirm('Ye task delete karna hai?');">
+              {% csrf_token %}
+              <button type="submit" class="btn-icon btn-del" title="Delete">&#10005;</button>
+            </form>
+          </div>
+          {% endif %}
+        </li>
+        {% empty %}
+        <li class="empty">Abhi tak koi task complete nahin hua.</li>
+        {% endfor %}
+      </ul>
+    </details>
+  </div>
+
+</div>
+</body>
+</html>
