@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Edit Karo</title>
+<style>
+  :root {
+    --ink: #1c1f26;
+    --paper: #f5f3ef;
+    --card: #ffffff;
+    --line: #e3ddd0;
+    --accent: #3f6b8a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 20px 16px; }
+  h1 { font-size: 1.1rem; margin: 0 0 18px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  label { display: block; font-size: 0.85rem; color: #6b6f78; margin-bottom: 6px; }
+  select, input[type="text"], input[type="date"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: #fdfcf9;
+    color: var(--ink);
+    margin-bottom: 14px;
+  }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .checkbox-row input { width: auto; }
+  .row { display: flex; gap: 10px; }
+  button, a.btn {
+    display: inline-block;
+    text-align: center;
+    padding: 11px 14px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+  }
+  button { background: var(--accent); color: #fff; flex: 1; }
+  a.btn { background: #eee; color: var(--ink); flex: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Task Edit Karo</h1>
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      <label for="{{ form.added_by.id_for_label }}">Kaun add kar raha hai</label>
+      {{ form.added_by }}
+      <label for="{{ form.description.id_for_label }}">Task</label>
+      {{ form.description }}
+      <div class="checkbox-row">
+        {{ form.is_urgent }}
+        <label for="{{ form.is_urgent.id_for_label }}" style="margin:0;">Urgent hai</label>
+      </div>
+      <label for="{{ form.deadline.id_for_label }}">Deadline</label>
+      {{ form.deadline }}
+      <div class="row">
+        <button type="submit">Save Karo</button>
+        <a class="btn" href="{% url 'task_list' %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+</body>
+</html>
